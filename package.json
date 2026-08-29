@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "prisma generate --config prisma.config.ts && tsc -p tsconfig.json",
     "start:dev": "tsc -p tsconfig.json && node --watch dist/src/main.js",
     "start:prod": "node dist/src/main.js",
     "prisma:generate": "prisma generate --config prisma.config.ts",
