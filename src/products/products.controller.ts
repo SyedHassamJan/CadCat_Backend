@@ -33,15 +33,19 @@ export class ProductsController {
   // ─── Public Routes ─────────────────────────────────────────────────────────
 
   /** GET /api/products/media/* — stream preview and thumbnail images directly from R2 */
-  @Get('media/*')
+  @Get('media/*path')
   async getMedia(@Param() params: any, @Res() res: Response) {
-    const key = params['0'] || Object.values(params).join('/');
+    // NestJS v11 splits wildcard segments into an array — join them back into the R2 key
+    const rawKey = params.path ?? params['0'] ?? Object.values(params);
+    const key: string = Array.isArray(rawKey) ? rawKey.join('/') : String(rawKey);
     try {
       const object = await this.storageService.getObjectStream('public', key);
       res.setHeader('Content-Type', object.ContentType || 'image/jpeg');
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.setHeader('Access-Control-Allow-Origin', '*');
       (object.Body as any).pipe(res);
-    } catch (e) {
+    } catch (e: any) {
+      console.error('[media] Failed to stream key:', key, e?.message);
       res.status(404).send('Image not found');
     }
   }
